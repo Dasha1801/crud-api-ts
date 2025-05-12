@@ -5,6 +5,21 @@ import { validateUserInput, validateUUID } from '../utils/validators';
 import { ERRORS } from '../shared/constants';
 import { UserInput } from '../interfaces/user.interface';
 
+const parseBody = (req: IncomingMessage): Promise<UserInput> => {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', (chunk) => (body += chunk));
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body);
+        resolve(data);
+      } catch {
+        reject(new Error('Invalid JSON'));
+      }
+    });
+  });
+};
+
 export const userController = {
   async getUsers(_: IncomingMessage, res: ServerResponse) {
     try {
@@ -36,16 +51,17 @@ export const userController = {
     }
   },
 
-  async postUser(req: UserInput, res: ServerResponse) {
+  async postUser(req: IncomingMessage, res: ServerResponse) {
     try {
-      const validation = validateUserInput(req);
+      const data = await parseBody(req);
+      const validation = validateUserInput(data);
 
       if (!validation.valid) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ message: validation.message }));
       }
 
-      const newUser = createUser(req);
+      const newUser = createUser(data);
       res.writeHead(201, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(newUser));
 
@@ -54,20 +70,21 @@ export const userController = {
     }
   },
 
-  async putUser(req: UserInput, res: ServerResponse, id: string) {
+  async putUser(req: IncomingMessage, res: ServerResponse, id: string) {
     if (!validateUUID(id)) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
       return res.end(JSON.stringify({ message: ERRORS.INVALID_ID }));
     }
 
-    const validation = validateUserInput(req);
+    const data = await parseBody(req);
+    const validation = validateUserInput(data);
     if (!validation.valid) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
       return res.end(JSON.stringify({ message: validation.message }));
     }
 
     try {
-      const updated = updateUser(id, req);
+      const updated = updateUser(id, data);
       if (!updated) {
         res.writeHead(404, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ message: ERRORS.USER_NOT_FOUND }));
