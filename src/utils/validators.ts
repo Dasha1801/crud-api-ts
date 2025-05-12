@@ -1,6 +1,6 @@
 import { validate as uuidValidate } from 'uuid';
-import { UserInput } from '../interfaces/user.interface.js';
-import { ERRORS } from '../shared/constants.js';
+import { UserInput } from '../interfaces/user.interface';
+import { ERRORS } from '../shared/constants';
 
 export const validateUUID = (id: string): boolean => uuidValidate(id);
 
