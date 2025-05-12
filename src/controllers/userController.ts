@@ -14,7 +14,7 @@ const parseBody = (req: IncomingMessage): Promise<UserInput> => {
         const data = JSON.parse(body);
         resolve(data);
       } catch {
-        reject(new Error('Invalid JSON'));
+        reject(new Error(ERRORS.INVALID_BODY));
       }
     });
   });

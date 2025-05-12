@@ -22,7 +22,4 @@ export const userRoutes = async (req: IncomingMessage, res: ServerResponse) => {
     if (method === 'PUT') return userController.putUser(req, res, id);
     if (method === 'DELETE') return userController.removeUser(req, res, id);
   }
-
-  res.writeHead(404, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ message: 'Endpoint not found' }));
 };
